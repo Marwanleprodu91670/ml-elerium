@@ -2023,8 +2023,8 @@ function library:AddWindow(title, options)
 end
 
 local window = library:AddWindow("Lite Hub Muscle Legends", {
-    main_color = Color3.fromRGB(41, 74, 122),
-    min_size = Vector2.new(250, 346),
+    main_color = Color3.fromRGB(97, 0, 117),
+    min_size = Vector2.new(350, 350),
     can_resize = false,
 })
 

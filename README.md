@@ -2024,7 +2024,7 @@ end
 
 local window = library:AddWindow("Lite Hub Muscle Legends", {
     main_color = Color3.fromRGB(41, 74, 122),
-    min_size = Vector2.new(35O, 346),
+    min_size = Vector2.new(400, 346),
     can_resize = false,
 })
 

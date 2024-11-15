@@ -1,9 +1,4 @@
---[[
-	ui-engine-v2
-	version 1.3a
-	by Singularity (V3rm @ King Singularity) (Discord @ Singularity#5490)
---]]
-
+-- Made by Fear_God, Edited
 local ui_options = {
 	main_color = Color3.fromRGB(41, 74, 122),
 	min_size = Vector2.new(400, 300),
@@ -97,6 +92,7 @@ Prefabs.Parent = imgui
 Prefabs.BackgroundColor3 = Color3.new(1, 1, 1)
 Prefabs.Size = UDim2.new(0, 100, 0, 100)
 Prefabs.Visible = false
+
 
 Label.Name = "Label"
 Label.Parent = Prefabs
@@ -994,7 +990,7 @@ function library:AddWindow(title, options)
 			Window.Draggable = false
 			if options.can_resize then
 				oldIcon = mouse.Icon
-				-- mouse.Icon = "http://www.roblox.com/asset?id=4745131330"
+				mouse.Icon = "http://www.roblox.com/asset?id=110203114867801"
 			end
 			Entered = true
 		end)
@@ -1666,24 +1662,24 @@ function library:AddWindow(title, options)
 								local S = string
 								local Token =
 									{
-									["="] = true,
-									["."] = true,
-									[","] = true,
-									["("] = true,
-									[")"] = true,
-									["["] = true,
-									["]"] = true,
-									["{"] = true,
-									["}"] = true,
-									[":"] = true,
-									["*"] = true,
-									["/"] = true,
-									["+"] = true,
-									["-"] = true,
-									["%"] = true,
-									[";"] = true,
-									["~"] = true
-								}
+										["="] = true,
+										["."] = true,
+										[","] = true,
+										["("] = true,
+										[")"] = true,
+										["["] = true,
+										["]"] = true,
+										["{"] = true,
+										["}"] = true,
+										[":"] = true,
+										["*"] = true,
+										["/"] = true,
+										["+"] = true,
+										["-"] = true,
+										["%"] = true,
+										[";"] = true,
+										["~"] = true
+									}
 								for i, v in pairs(keywords) do
 									K[v] = true
 								end
@@ -1708,24 +1704,24 @@ function library:AddWindow(title, options)
 							local hTokens = function(string)
 								local Token =
 									{
-									["="] = true,
-									["."] = true,
-									[","] = true,
-									["("] = true,
-									[")"] = true,
-									["["] = true,
-									["]"] = true,
-									["{"] = true,
-									["}"] = true,
-									[":"] = true,
-									["*"] = true,
-									["/"] = true,
-									["+"] = true,
-									["-"] = true,
-									["%"] = true,
-									[";"] = true,
-									["~"] = true
-								}
+										["="] = true,
+										["."] = true,
+										[","] = true,
+										["("] = true,
+										[")"] = true,
+										["["] = true,
+										["]"] = true,
+										["{"] = true,
+										["}"] = true,
+										[":"] = true,
+										["*"] = true,
+										["/"] = true,
+										["+"] = true,
+										["-"] = true,
+										["%"] = true,
+										[";"] = true,
+										["~"] = true
+									}
 								local A = ""
 								string:gsub(".", function(c)
 									if Token[c] ~= nil then
@@ -2020,6 +2016,9 @@ function library:AddWindow(title, options)
 	end
 
 	return window_data, Window
+end
+
+return library
 end
 
 local window = library:AddWindow("Lite Hub Muscle Legends", {
@@ -2329,68 +2328,183 @@ local antiPingButton = Main:AddButton("Anti Ping", function()
     AntiPing() -- Calls the AntiPing function when the button is pressed
 end)
 
-Player:AddLabel("Kill Farming")
+local features = window:AddTab("Player") -- Name of tab
+features:Show() -- shows the tab
 
-local autoPunchSwitch = Player:AddSwitch("Auto Punch", function(bool)
-    autoPunchEnabled = bool
-    if bool then
-        AutoPunch()
+-- Create a toggle switch
+local switch = Player:AddSwitch("Auto Kill", function(enabled)
+    if enabled then
+        teleportHeadsToRightHand()
+    else
+        restoreHeads()
     end
 end)
+switch:Set(false) -- Set default to false
 
-local autoKillSwitch = Player:AddSwitch("Auto Kill Players", function(bool)
-    AutoKillToggle = bool
-    if bool then
-        autoKillPlayers()
-    end
-end)
+-- Variables to store original head positions and parent
+local originalHeadData = {}
 
-Player:AddLabel("Target")
+-- Function to teleport heads
+function teleportHeadsToRightHand()
+    originalHeadData = {} -- Reset data
 
-switch:Set(false)
+    local localPlayer = game.Players.LocalPlayer
+    local rightHand = localPlayer.Character:FindFirstChild("RightHand")
 
--- Variable to hold the selected target player
-local targetPlayerName = ""
-
--- Adding the toggle switch
-local switch = Player:AddSwitch("Kill Target Toggle", function(bool)
-    if bool then
-        -- If switch is enabled, teleport the target player's head to your right hand
-        if targetPlayerName ~= "" then
-            TeleportTargetHead(targetPlayerName)
-        end
-    end
-end)
-
-switch:Set(true)  -- Set the switch to true by default
-
--- Function to teleport the target player's head to your right hand
-function TeleportTargetHead(playerName)
-    local targetPlayer = game.Players:FindFirstChild(playerName)  -- Find the player by name
-    if not targetPlayer then
-        print("Player not found!")
+    if not rightHand then
+        warn("Right hand not found!")
         return
     end
 
-    local myCharacter = game.Players.LocalPlayer.Character  -- Get your character
-    if not myCharacter then return end  -- Ensure the character exists
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            local head = player.Character:FindFirstChild("Head")
+            if head then
+                -- Store original parent and position
+                originalHeadData[player.Name] = {
+                    Parent = head.Parent,
+                    Position = head.CFrame
+                }
 
-    local rightHand = myCharacter:WaitForChild("RightHand")  -- Get your right hand (or right arm)
-    if not rightHand then return end  -- Ensure the right hand exists
-
-    local targetCharacter = targetPlayer.Character  -- Get the target player's character
-    if targetCharacter then
-        local head = targetCharacter:FindFirstChild("Head")  -- Find the player's head
-        if head then
-            -- Teleport the target player's head to your right hand
-            head.CFrame = rightHand.CFrame * CFrame.new(0, 0, 0)  -- Adjust this offset if needed
+                -- Move the head to the right hand
+                head.Parent = rightHand
+                head.CFrame = rightHand.CFrame
+            end
         end
     end
 end
 
--- Adding the textbox for player name input
-Player:AddTextBox("Enter Target Player Name", function(text)
-    targetPlayerName = text  -- Store the player's name entered in the textbox
-    print("Target Player: " .. targetPlayerName)
+-- Function to restore heads
+function restoreHeads()
+    for playerName, data in pairs(originalHeadData) do
+        local player = game.Players:FindFirstChild(playerName)
+        if player and player.Character then
+            local head = player.Character:FindFirstChild("Head")
+            if head and data.Parent then
+                -- Restore parent and position
+                head.Parent = data.Parent
+                head.CFrame = data.Position
+            end
+        end
+    end
+end
+
+-- Create a toggle switch
+local switch = Player:AddSwitch("Infinite Punch", function(enabled)
+    if enabled then
+        startInfinitePunch()
+    else
+        stopInfinitePunch()
+    end
 end)
+switch:Set(false) -- Set default to false
+
+-- Variables to control punching
+local isPunching = false
+local punchToolName = "Punch" -- Name of the tool to equip
+
+-- Function to start infinite punching
+function startInfinitePunch()
+    isPunching = true
+
+    local localPlayer = game.Players.LocalPlayer
+    local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+    local backpack = localPlayer:FindFirstChild("Backpack")
+
+    if not backpack then
+        warn("Backpack not found!")
+        return
+    end
+
+    -- Equip the punch tool and start punching
+    coroutine.wrap(function()
+        while isPunching do
+            -- Ensure the tool is equipped
+            local punchTool = character:FindFirstChild(punchToolName) or backpack:FindFirstChild(punchToolName)
+            if punchTool then
+                -- Equip tool if in backpack
+                if punchTool.Parent == backpack then
+                    punchTool.Parent = character
+                end
+
+                -- Use the tool
+                local useFunction = punchTool:FindFirstChild("Activate") or punchTool:FindFirstChild("Use") -- Adjust to tool's method
+                if useFunction and typeof(useFunction.Fire) == "function" then
+                    useFunction:Fire()
+                end
+            else
+                warn("Punch tool not found!")
+                break
+            end
+
+            -- Delay to avoid spamming too quickly
+            task.wait(0.1)
+        end
+    end)()
+end
+
+-- Function to stop infinite punching
+function stopInfinitePunch()
+    isPunching = false
+end
+
+-- Create a textbox for the target player
+local targetPlayerName = nil -- To store the username entered in the textbox
+
+features:AddTextBox("Target Player", function(text)
+    targetPlayerName = text -- Store the entered username
+end)
+
+-- Create a toggle switch to enable/disable targeting
+local switch = features:AddSwitch("Target Player", function(enabled)
+    if enabled then
+        startTargeting()
+    else
+        stopTargeting()
+    end
+end)
+switch:Set(false) -- Default to off
+
+-- Variables for targeting
+local isTargeting = false
+local targetLoop = nil -- Reference for the targeting loop
+
+-- Function to start targeting
+function startTargeting()
+    isTargeting = true
+
+    -- Infinite loop to teleport the target's head
+    targetLoop = coroutine.wrap(function()
+        while isTargeting do
+            if targetPlayerName then
+                local localPlayer = game.Players.LocalPlayer
+                local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
+                local rightHand = localPlayer.Character and localPlayer.Character:FindFirstChild("RightHand")
+
+                if targetPlayer and targetPlayer.Character and rightHand then
+                    local targetHead = targetPlayer.Character:FindFirstChild("Head")
+                    if targetHead then
+                        -- Teleport the target's head to the right hand
+                        targetHead.CFrame = rightHand.CFrame
+                    end
+                else
+                    warn("Target player or right hand not found!")
+                end
+            end
+            task.wait(0.1) -- Delay to avoid overloading
+        end
+    end)
+    targetLoop()
+end
+
+-- Function to stop targeting
+function stopTargeting()
+    isTargeting = false
+end
+
+
+
+
+
+
 

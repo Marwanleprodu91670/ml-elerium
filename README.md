@@ -2351,22 +2351,6 @@ local autoKillSwitch = Player:AddSwitch("Auto Kill Players", function(bool)
     end
 end)
 
-local whitelistSwitch = Player:AddSwitch("Whitelist", function(bool)
-    whitelistEnabled = bool
-end)
-
-whitelistSwitch:Set(false) -- Default state is off
-
-local dropdown = Player:AddDropdown("Select Whitelist Player", function(selectedPlayer)
-    selectedWhitelistPlayer = selectedPlayer
-end)
-
--- Add options to the dropdown
-local playerList = RefreshPlayerList()  -- This should return a list of player names
-for _, player in ipairs(playerList) do
-    dropdown:Add(player)
-end
-
 Player:AddLabel("Target")
 
 local switch = Player:AddSwitch("Kill Target Toggle", function(value)
@@ -2378,14 +2362,49 @@ end)
 
 switch:Set(false)
 
-local dropdown = Player:AddDropdown("Select Target Player", function(value)
-    selectedTargetPlayer = value  -- Store the selected player in selectedTargetPlayer
+-- Variable to hold the selected target player
+local targetPlayerName = ""
+
+-- Adding the toggle switch
+local switch = features:AddSwitch("Kill Target Toggle", function(bool)
+    if bool then
+        -- If switch is enabled, teleport the target player's head to your right hand
+        if targetPlayerName ~= "" then
+            TeleportTargetHead(targetPlayerName)
+        end
+    end
 end)
 
--- Populating the dropdown with the refreshed player list
-local playerList = RefreshPlayerList()  -- Assuming this function returns a list of player names or IDs
+switch:Set(true)  -- Set the switch to true by default
 
-for _, player in ipairs(playerList) do
-    dropdown:Add(player)  -- Add each player to the dropdown options
+-- Function to teleport the target player's head to your right hand
+function TeleportTargetHead(playerName)
+    local targetPlayer = game.Players:FindFirstChild(playerName)  -- Find the player by name
+    if not targetPlayer then
+        print("Player not found!")
+        return
+    end
+
+    local myCharacter = game.Players.LocalPlayer.Character  -- Get your character
+    if not myCharacter then return end  -- Ensure the character exists
+
+    local rightHand = myCharacter:WaitForChild("RightHand")  -- Get your right hand (or right arm)
+    if not rightHand then return end  -- Ensure the right hand exists
+
+    local targetCharacter = targetPlayer.Character  -- Get the target player's character
+    if targetCharacter then
+        local head = targetCharacter:FindFirstChild("Head")  -- Find the player's head
+        if head then
+            -- Teleport the target player's head to your right hand
+            head.CFrame = rightHand.CFrame * CFrame.new(0, 0, 0)  -- Adjust this offset if needed
+        end
+    end
+end
+
+-- Adding the textbox for player name input
+features:AddTextBox("Enter Target Player Name", function(text)
+    targetPlayerName = text  -- Store the player's name entered in the textbox
+    print("Target Player: " .. targetPlayerName)
 end)
+
 

@@ -2028,7 +2028,8 @@ local window = library:AddWindow("Lite Hub Muscle Legends", {
     can_resize = false,
 })
 
-
+local Main = window:AddTab("Main") -- Name of tab
+local Player = window:AddTab("Player") -- Name of tab
 
 -- Variables
 local autoPushupsEnabled = false
@@ -2046,10 +2047,6 @@ local selectedSpyPlayer = nil
 local lockPositionEnabled = false
 local selectedPosition = CFrame.new(0, 0, 0)
 local AutoKillToggle = false
-
-
-local features = window:AddTab("Main") -- Name of tab
-features:Show() -- shows the tab
 
 --another variable to make script still work after player die
 local function onCharacterAdded(character)
@@ -2328,12 +2325,9 @@ local lockPositionSwitch = Main:AddSwitch("Lock Position", function(bool)
     LockPosition() -- Execute the LockPosition function regardless of the state
 end)
 
-local antiPingButton = Features:AddButton("Anti Ping", function()
+local antiPingButton = Main:AddButton("Anti Ping", function()
     AntiPing() -- Calls the AntiPing function when the button is pressed
 end)
-
-local features = window:AddTab("Player") -- Name of tab
-features:Show() -- shows the tab
 
 Player:AddLabel("Kill Farming")
 
@@ -2366,7 +2360,7 @@ switch:Set(false)
 local targetPlayerName = ""
 
 -- Adding the toggle switch
-local switch = features:AddSwitch("Kill Target Toggle", function(bool)
+local switch = Player:AddSwitch("Kill Target Toggle", function(bool)
     if bool then
         -- If switch is enabled, teleport the target player's head to your right hand
         if targetPlayerName ~= "" then
@@ -2402,9 +2396,8 @@ function TeleportTargetHead(playerName)
 end
 
 -- Adding the textbox for player name input
-features:AddTextBox("Enter Target Player Name", function(text)
+Player:AddTextBox("Enter Target Player Name", function(text)
     targetPlayerName = text  -- Store the player's name entered in the textbox
     print("Target Player: " .. targetPlayerName)
 end)
-
 

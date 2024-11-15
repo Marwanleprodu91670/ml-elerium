@@ -2021,14 +2021,16 @@ end
 return library
 end
 
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/User/Library/main/script.lua"))() -- Adjust this line with your actual library
 local window = library:AddWindow("Lite Hub Muscle Legends", {
     main_color = Color3.fromRGB(41, 74, 122),
     min_size = Vector2.new(400, 346),
     can_resize = false,
 })
 
-local Main = window:AddTab("Main") -- Name of tab
-local Player = window:AddTab("Player") -- Name of tab
+-- Tabs
+local Main = window:AddTab("Main")
+local Player = window:AddTab("Player")
 
 -- Variables
 local autoPushupsEnabled = false
@@ -2036,49 +2038,69 @@ local autoSitupsEnabled = false
 local autoWeightEnabled = false
 local autoHandstandsEnabled = false
 local autoPunchEnabled = false
-local autoKillEnabled = false
-local whitelistEnabled = false
-local killTargetEnabled = false
-local spyPlayerEnabled = false
-local selectedWhitelistPlayer = nil
-local selectedTargetPlayer = nil
-local selectedSpyPlayer = nil
 local lockPositionEnabled = false
-local selectedPosition = CFrame.new(0, 0, 0)
-local AutoKillToggle = false
+local isPunching = false
+local isTargeting = false
+local targetPlayerName = nil
 
---another variable to make script still work after player die
-local function onCharacterAdded(character)
-    character:WaitForChild("Humanoid") -- Wait for the Humanoid to load
+-- UI Elements
+-- Main Tab
+Main:AddLabel("General Auto Farm Features")
+Main:AddSwitch("Auto Pushups", function(bool)
+    autoPushupsEnabled = bool
+    if bool then AutoPushups() end
+end)
 
-    -- Reinitialize any required toggles or tools here
-    if autoPushupsEnabled then AutoPushups() end
-    if autoSitupsEnabled then AutoSitups() end
-    if autoWeightEnabled then AutoWeight() end
-    if autoHandstandsEnabled then AutoHandstands() end
-    if autoPunchEnabled then AutoPunch() end
-    if autoKillEnabled then AutoKill() end
-    if killTargetEnabled then KillTarget() end
-end
+Main:AddSwitch("Auto Situps", function(bool)
+    autoSitupsEnabled = bool
+    if bool then AutoSitups() end
+end)
 
-local player = game.Players.LocalPlayer
+Main:AddSwitch("Auto Weight", function(bool)
+    autoWeightEnabled = bool
+    if bool then AutoWeight() end
+end)
 
--- Initial character setup
-if player.Character then
-    onCharacterAdded(player.Character)
-end
+Main:AddSwitch("Auto Handstands", function(bool)
+    autoHandstandsEnabled = bool
+    if bool then AutoHandstands() end
+end)
 
--- Connect the character added event
-player.CharacterAdded:Connect(onCharacterAdded)
+Main:AddLabel("Misc")
+Main:AddSwitch("Lock Position", function(bool)
+    lockPositionEnabled = bool
+    LockPosition()
+end)
 
+Main:AddButton("Anti Ping", function()
+    AntiPing()
+end)
 
--- Function to toggle Auto Pushups
+-- Player Tab
+Player:AddLabel("Player Features")
+Player:AddTextBox("Target Player", function(text)
+    targetPlayerName = text
+end)
+
+Player:AddSwitch("Target Player", function(bool)
+    if bool then startTargeting() else stopTargeting() end
+end)
+
+Player:AddSwitch("Auto Kill", function(bool)
+    if bool then teleportHeadsToRightHand() else restoreHeads() end
+end)
+
+Player:AddSwitch("Infinite Punch", function(bool)
+    if bool then startInfinitePunch() else stopInfinitePunch() end
+end)
+
+-- Functions
+-- Auto Pushups
 function AutoPushups()
     spawn(function()
         while autoPushupsEnabled do
             local player = game.Players.LocalPlayer
             local pushupsTool = player.Backpack:FindFirstChild("Pushups") or player.Character:FindFirstChild("Pushups")
-            
             if pushupsTool then
                 player.Character.Humanoid:EquipTool(pushupsTool)
                 pushupsTool:Activate()
@@ -2088,13 +2110,12 @@ function AutoPushups()
     end)
 end
 
--- Function to toggle Auto Situps
+-- Auto Situps
 function AutoSitups()
     spawn(function()
         while autoSitupsEnabled do
             local player = game.Players.LocalPlayer
             local situpsTool = player.Backpack:FindFirstChild("Situps") or player.Character:FindFirstChild("Situps")
-            
             if situpsTool then
                 player.Character.Humanoid:EquipTool(situpsTool)
                 situpsTool:Activate()
@@ -2104,13 +2125,12 @@ function AutoSitups()
     end)
 end
 
--- Function to toggle Auto Weight
+-- Auto Weight
 function AutoWeight()
     spawn(function()
         while autoWeightEnabled do
             local player = game.Players.LocalPlayer
             local weightTool = player.Backpack:FindFirstChild("Weight") or player.Character:FindFirstChild("Weight")
-            
             if weightTool then
                 player.Character.Humanoid:EquipTool(weightTool)
                 weightTool:Activate()
@@ -2120,13 +2140,12 @@ function AutoWeight()
     end)
 end
 
--- Function to toggle Auto Handstands
+-- Auto Handstands
 function AutoHandstands()
     spawn(function()
         while autoHandstandsEnabled do
             local player = game.Players.LocalPlayer
             local handstandsTool = player.Backpack:FindFirstChild("Handstands") or player.Character:FindFirstChild("Handstands")
-            
             if handstandsTool then
                 player.Character.Humanoid:EquipTool(handstandsTool)
                 handstandsTool:Activate()
@@ -2136,237 +2155,91 @@ function AutoHandstands()
     end)
 end
 
--- Function to toggle Auto Punch
-function AutoPunch()
-    spawn(function()
-        while autoPunchEnabled do
-            local player = game.Players.LocalPlayer
-            local punchTool = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
-            
-            if punchTool then
-                player.Character.Humanoid:EquipTool(punchTool)
-                punchTool:Activate()
-            end
-            wait(0.1)
-        end
-    end)
-end
-
-local function autoKillPlayers()
-    -- Loop to continuously check Auto Kill toggle
-    spawn(function()
-        while AutoKillToggle do
-            -- Get the player and character
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            
-            -- Get the right hand of the character
-            local rightHand = character:FindFirstChild("RightHand")
-            
-            -- Check if the right hand exists
-            if rightHand then
-                -- Loop through all players in the game
-                for _, target in pairs(game.Players:GetPlayers()) do
-                    -- Check that the target is a valid player and is not the local player
-                    if target ~= player and target.Character and target.Character:FindFirstChild("Head") then
-                        -- Check for whitelist if enabled
-                        if not (whitelistEnabled and target.Name == selectedWhitelistPlayer) then
-                            -- Teleport the target's head to the right hand's position
-                            target.Character.Head.CFrame = rightHand.CFrame
-                        end
-                    end
-                end
-            end
-            -- Wait a short time before repeating the loop
-            wait(0.1) -- Delay for smoother execution
-        end
-    end)
-end
-
--- Function to toggle Kill Target
-function KillTarget()
-    spawn(function()
-        while killTargetEnabled do
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local rightHand = character:FindFirstChild("RightHand")
-
-            if rightHand and selectedTargetPlayer then
-                local targetPlayer = game.Players:FindFirstChild(selectedTargetPlayer)
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
-                    targetPlayer.Character.Head.CFrame = rightHand.CFrame
-                end
-            end
-            wait(0.1)
-        end
-    end)
-end
-
--- Function to toggle Spy Player
-function SpyPlayer()
-    spawn(function()
-        while spyPlayerEnabled do
-            if selectedSpyPlayer then
-                local targetPlayer = game.Players:FindFirstChild(selectedSpyPlayer)
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
-                    workspace.CurrentCamera.CameraSubject = targetPlayer.Character.Humanoid
-                end
-            end
-            wait(0.1)
-        end
-    end)
-end
-
--- Function to reset camera to local player
-function ResetCamera()
-    workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-end
-
--- Function to lock or unlock player position
+-- Lock Position
 function LockPosition()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
-    
-    if lockPositionEnabled then
-        humanoid.PlatformStand = true -- Freeze the player
-    else
-        humanoid.PlatformStand = false -- Unfreeze the player
-    end
+    humanoid.PlatformStand = lockPositionEnabled
 end
 
--- Function to refresh player list for dropdown
-local function RefreshPlayerList()
-    local players = {}
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player.Name ~= game.Players.LocalPlayer.Name then
-            table.insert(players, player.Name)
-        end
-    end
-    return players
-end
-
--- Function for Anti Ping
+-- Anti Ping
 function AntiPing()
-    local decalsyeeted = true -- Leaving this on makes games look shitty but the fps goes up by at least 20. 
-    local g = game
-    local w = g.Workspace
-    local l = g.Lighting
-    local t = w.Terrain
-    t.WaterWaveSize = 0
-    t.WaterWaveSpeed = 0
-    t.WaterReflectance = 0
-    t.WaterTransparency = 0
-    l.GlobalShadows = false
-    l.FogEnd = 9e9
-    l.Brightness = 0
+    local t = game.Workspace.Terrain
+    local l = game.Lighting
+    t.WaterWaveSize, t.WaterWaveSpeed, t.WaterReflectance, t.WaterTransparency = 0, 0, 0, 0
+    l.GlobalShadows, l.FogEnd, l.Brightness = false, 9e9, 0
     settings().Rendering.QualityLevel = "Level01"
-    for i, v in pairs(g:GetDescendants()) do
-        if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
-            v.Material = "Plastic"
-            v.Reflectance = 0
-        elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Decal") or v:IsA("Texture") then
             v.Transparency = 1
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
             v.Lifetime = NumberRange.new(0)
-        elseif v:IsA("Explosion") then
-            v.BlastPressure = 1
-            v.BlastRadius = 1
-        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
-            v.Enabled = false
-        elseif v:IsA("MeshPart") then
-            v.Material = "Plastic"
-            v.Reflectance = 0
-            v.TextureID = 10385902758728957
-        end
-    end
-    for i, e in pairs(l:GetChildren()) do
-        if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
-            e.Enabled = false
         end
     end
 end
 
-Main:AddLabel("General Auto Farm Features")
+-- Target Player
+function startTargeting()
+    isTargeting = true
+    spawn(function()
+        while isTargeting do
+            local player = game.Players.LocalPlayer
+            local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
+            local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
+            if targetPlayer and targetPlayer.Character and rightHand then
+                local targetHead = targetPlayer.Character:FindFirstChild("Head")
+                if targetHead then
+                    targetHead.CFrame = rightHand.CFrame
+                end
+            end
+            wait(0.1)
+        end
+    end)
+end
 
-local autoPushupsSwitch = Main:AddSwitch("Auto Pushups", function(bool)
-    autoPushupsEnabled = bool -- Set the value for the toggle
-    if bool then
-        AutoPushups()
-    end
-end)
+function stopTargeting()
+    isTargeting = false
+end
 
-local autoSitupsSwitch = Main:AddSwitch("Auto Situps", function(bool)
-    autoSitupsEnabled = bool -- Set the value for the toggle
-    if bool then
-        AutoSitups()
-    end
-end)
+-- Infinite Punch
+function startInfinitePunch()
+    isPunching = true
+    spawn(function()
+        while isPunching do
+            local player = game.Players.LocalPlayer
+            local punchTool = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
+            if punchTool then
+                player.Character.Humanoid:EquipTool(punchTool)
+                punchTool:Activate()
+            else
+                warn("Punch tool not found!")
+                break
+            end
+            wait(0.1)
+        end
+    end)
+end
 
-local autoWeightSwitch = Main:AddSwitch("Auto Weight", function(bool)
-    autoWeightEnabled = bool -- Update the state for the toggle
-    if bool then
-        AutoWeight()
-    end
-end)
+function stopInfinitePunch()
+    isPunching = false
+end
 
-local autoHandstandsSwitch = Main:AddSwitch("Auto Handstands", function(bool)
-    autoHandstandsEnabled = bool -- Update the state for the toggle
-    if bool then
-        AutoHandstands()
-    end
-end)
-
-Main:AddLabel("Misc")
-
-local lockPositionSwitch = Main:AddSwitch("Lock Position", function(bool)
-    lockPositionEnabled = bool -- Update the state for the toggle
-    LockPosition() -- Execute the LockPosition function regardless of the state
-end)
-
-local antiPingButton = Main:AddButton("Anti Ping", function()
-    AntiPing() -- Calls the AntiPing function when the button is pressed
-end)
-
-local features = window:AddTab("Player") -- Name of tab
-features:Show() -- shows the tab
-
--- Create a toggle switch
-local switch = Player:AddSwitch("Auto Kill", function(enabled)
-    if enabled then
-        teleportHeadsToRightHand()
-    else
-        restoreHeads()
-    end
-end)
-switch:Set(false) -- Set default to false
-
--- Variables to store original head positions and parent
+-- Auto Kill
 local originalHeadData = {}
-
--- Function to teleport heads
 function teleportHeadsToRightHand()
-    originalHeadData = {} -- Reset data
-
     local localPlayer = game.Players.LocalPlayer
-    local rightHand = localPlayer.Character:FindFirstChild("RightHand")
-
-    if not rightHand then
-        warn("Right hand not found!")
-        return
-    end
-
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= localPlayer and player.Character then
-            local head = player.Character:FindFirstChild("Head")
+    local rightHand = localPlayer.Character and localPlayer.Character:FindFirstChild("RightHand")
+    if not rightHand then return end
+    originalHeadData = {}
+    for _, target in pairs(game.Players:GetPlayers()) do
+        if target ~= localPlayer and target.Character then
+            local head = target.Character:FindFirstChild("Head")
             if head then
-                -- Store original parent and position
-                originalHeadData[player.Name] = {
+                originalHeadData[target.Name] = {
                     Parent = head.Parent,
                     Position = head.CFrame
                 }
-
-                -- Move the head to the right hand
                 head.Parent = rightHand
                 head.CFrame = rightHand.CFrame
             end
@@ -2374,14 +2247,12 @@ function teleportHeadsToRightHand()
     end
 end
 
--- Function to restore heads
 function restoreHeads()
     for playerName, data in pairs(originalHeadData) do
         local player = game.Players:FindFirstChild(playerName)
         if player and player.Character then
             local head = player.Character:FindFirstChild("Head")
-            if head and data.Parent then
-                -- Restore parent and position
+            if head then
                 head.Parent = data.Parent
                 head.CFrame = data.Position
             end
@@ -2389,118 +2260,6 @@ function restoreHeads()
     end
 end
 
--- Create a toggle switch
-local switch = Player:AddSwitch("Infinite Punch", function(enabled)
-    if enabled then
-        startInfinitePunch()
-    else
-        stopInfinitePunch()
-    end
-end)
-switch:Set(false) -- Set default to false
-
--- Variables to control punching
-local isPunching = false
-local punchToolName = "Punch" -- Name of the tool to equip
-
--- Function to start infinite punching
-function startInfinitePunch()
-    isPunching = true
-
-    local localPlayer = game.Players.LocalPlayer
-    local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-    local backpack = localPlayer:FindFirstChild("Backpack")
-
-    if not backpack then
-        warn("Backpack not found!")
-        return
-    end
-
-    -- Equip the punch tool and start punching
-    coroutine.wrap(function()
-        while isPunching do
-            -- Ensure the tool is equipped
-            local punchTool = character:FindFirstChild(punchToolName) or backpack:FindFirstChild(punchToolName)
-            if punchTool then
-                -- Equip tool if in backpack
-                if punchTool.Parent == backpack then
-                    punchTool.Parent = character
-                end
-
-                -- Use the tool
-                local useFunction = punchTool:FindFirstChild("Activate") or punchTool:FindFirstChild("Use") -- Adjust to tool's method
-                if useFunction and typeof(useFunction.Fire) == "function" then
-                    useFunction:Fire()
-                end
-            else
-                warn("Punch tool not found!")
-                break
-            end
-
-            -- Delay to avoid spamming too quickly
-            task.wait(0.1)
-        end
-    end)()
-end
-
--- Function to stop infinite punching
-function stopInfinitePunch()
-    isPunching = false
-end
-
--- Create a textbox for the target player
-local targetPlayerName = nil -- To store the username entered in the textbox
-
-features:AddTextBox("Target Player", function(text)
-    targetPlayerName = text -- Store the entered username
-end)
-
--- Create a toggle switch to enable/disable targeting
-local switch = features:AddSwitch("Target Player", function(enabled)
-    if enabled then
-        startTargeting()
-    else
-        stopTargeting()
-    end
-end)
-switch:Set(false) -- Default to off
-
--- Variables for targeting
-local isTargeting = false
-local targetLoop = nil -- Reference for the targeting loop
-
--- Function to start targeting
-function startTargeting()
-    isTargeting = true
-
-    -- Infinite loop to teleport the target's head
-    targetLoop = coroutine.wrap(function()
-        while isTargeting do
-            if targetPlayerName then
-                local localPlayer = game.Players.LocalPlayer
-                local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
-                local rightHand = localPlayer.Character and localPlayer.Character:FindFirstChild("RightHand")
-
-                if targetPlayer and targetPlayer.Character and rightHand then
-                    local targetHead = targetPlayer.Character:FindFirstChild("Head")
-                    if targetHead then
-                        -- Teleport the target's head to the right hand
-                        targetHead.CFrame = rightHand.CFrame
-                    end
-                else
-                    warn("Target player or right hand not found!")
-                end
-            end
-            task.wait(0.1) -- Delay to avoid overloading
-        end
-    end)
-    targetLoop()
-end
-
--- Function to stop targeting
-function stopTargeting()
-    isTargeting = false
-end
 
 
 

@@ -2019,246 +2019,335 @@ function library:AddWindow(title, options)
 end
 
 return library
-end
 
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/User/Library/main/script.lua"))() -- Adjust this line with your actual library
+--Script
+
 local window = library:AddWindow("Lite Hub Muscle Legends", {
-    main_color = Color3.fromRGB(41, 74, 122),
-    min_size = Vector2.new(400, 346),
-    can_resize = false,
+	main_color = Color3.fromRGB(41, 74, 122), -- Color
+	min_size = Vector2.new(450, 346), -- Size of the gui
+	can_resize = false, -- true or false
 })
 
--- Tabs
-local Main = window:AddTab("Main")
-local Player = window:AddTab("Player")
+local features = window:AddTab("Auto Farm") -- Name of tab
+features:Show() -- shows the tab
 
--- Variables
-local autoPushupsEnabled = false
-local autoSitupsEnabled = false
-local autoWeightEnabled = false
-local autoHandstandsEnabled = false
-local autoPunchEnabled = false
-local lockPositionEnabled = false
-local isPunching = false
-local isTargeting = false
-local targetPlayerName = nil
-
--- UI Elements
--- Main Tab
-Main:AddLabel("General Auto Farm Features")
-Main:AddSwitch("Auto Pushups", function(bool)
+Auto Farm:AddSwitch("Auto Pushups", function(bool)
     autoPushupsEnabled = bool
     if bool then AutoPushups() end
 end)
 
-Main:AddSwitch("Auto Situps", function(bool)
+Auto Farm:AddSwitch("Auto Situps", function(bool)
     autoSitupsEnabled = bool
     if bool then AutoSitups() end
 end)
 
-Main:AddSwitch("Auto Weight", function(bool)
+Auto Farm:AddSwitch("Auto Weight", function(bool)
     autoWeightEnabled = bool
     if bool then AutoWeight() end
 end)
 
-Main:AddSwitch("Auto Handstands", function(bool)
+Auto Farm:AddSwitch("Auto Handstands", function(bool)
     autoHandstandsEnabled = bool
     if bool then AutoHandstands() end
 end)
 
-Main:AddLabel("Misc")
-Main:AddSwitch("Lock Position", function(bool)
-    lockPositionEnabled = bool
-    LockPosition()
-end)
+local features = window:AddTab("Misc") -- Name of tab
+features:Show() -- shows the tab
 
-Main:AddButton("Anti Ping", function()
-    AntiPing()
-end)
-
--- Player Tab
-Player:AddLabel("Player Features")
-Player:AddTextBox("Target Player", function(text)
-    targetPlayerName = text
-end)
-
-Player:AddSwitch("Target Player", function(bool)
-    if bool then startTargeting() else stopTargeting() end
-end)
-
-Player:AddSwitch("Auto Kill", function(bool)
-    if bool then teleportHeadsToRightHand() else restoreHeads() end
-end)
-
-Player:AddSwitch("Infinite Punch", function(bool)
-    if bool then startInfinitePunch() else stopInfinitePunch() end
-end)
-
--- Functions
--- Auto Pushups
-function AutoPushups()
-    spawn(function()
-        while autoPushupsEnabled do
-            local player = game.Players.LocalPlayer
-            local pushupsTool = player.Backpack:FindFirstChild("Pushups") or player.Character:FindFirstChild("Pushups")
-            if pushupsTool then
-                player.Character.Humanoid:EquipTool(pushupsTool)
-                pushupsTool:Activate()
-            end
-            wait(0.1)
-        end
-    end)
+Misc:AddButton("No Ping [Bad Quality]",function()
+	local decalsyeeted = true -- Leaving this on makes games look shitty but the fps goes up by at least 20.
+local g = game
+local w = g.Workspace
+local l = g.Lighting
+local t = w.Terrain
+t.WaterWaveSize = 0
+t.WaterWaveSpeed = 0
+t.WaterReflectance = 0
+t.WaterTransparency = 0
+l.GlobalShadows = false
+l.FogEnd = 9e9
+l.Brightness = 0
+settings().Rendering.QualityLevel = "Level01"
+for i, v in pairs(g:GetDescendants()) do
+    if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+        v.Material = "Plastic"
+        v.Reflectance = 0
+    elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+        v.Transparency = 1
+    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+        v.Lifetime = NumberRange.new(0)
+    elseif v:IsA("Explosion") then
+        v.BlastPressure = 1
+        v.BlastRadius = 1
+    elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+        v.Enabled = false
+    elseif v:IsA("MeshPart") then
+        v.Material = "Plastic"
+        v.Reflectance = 0
+        v.TextureID = 10385902758728957
+    end
 end
-
--- Auto Situps
-function AutoSitups()
-    spawn(function()
-        while autoSitupsEnabled do
-            local player = game.Players.LocalPlayer
-            local situpsTool = player.Backpack:FindFirstChild("Situps") or player.Character:FindFirstChild("Situps")
-            if situpsTool then
-                player.Character.Humanoid:EquipTool(situpsTool)
-                situpsTool:Activate()
-            end
-            wait(0.1)
-        end
-    end)
+for i, e in pairs(l:GetChildren()) do
+    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+        e.Enabled = false
+    end
 end
+end)
 
--- Auto Weight
-function AutoWeight()
-    spawn(function()
-        while autoWeightEnabled do
-            local player = game.Players.LocalPlayer
-            local weightTool = player.Backpack:FindFirstChild("Weight") or player.Character:FindFirstChild("Weight")
-            if weightTool then
-                player.Character.Humanoid:EquipTool(weightTool)
-                weightTool:Activate()
-            end
-            wait(0.1)
-        end
-    end)
-end
-
--- Auto Handstands
-function AutoHandstands()
-    spawn(function()
-        while autoHandstandsEnabled do
-            local player = game.Players.LocalPlayer
-            local handstandsTool = player.Backpack:FindFirstChild("Handstands") or player.Character:FindFirstChild("Handstands")
-            if handstandsTool then
-                player.Character.Humanoid:EquipTool(handstandsTool)
-                handstandsTool:Activate()
-            end
-            wait(0.1)
-        end
-    end)
-end
-
--- Lock Position
-function LockPosition()
+Misc:AddButton("Lock Positiob", function()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    humanoid.PlatformStand = lockPositionEnabled
-end
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 
--- Anti Ping
-function AntiPing()
-    local t = game.Workspace.Terrain
-    local l = game.Lighting
-    t.WaterWaveSize, t.WaterWaveSpeed, t.WaterReflectance, t.WaterTransparency = 0, 0, 0, 0
-    l.GlobalShadows, l.FogEnd, l.Brightness = false, 9e9, 0
-    settings().Rendering.QualityLevel = "Level01"
-    for _, v in pairs(game:GetDescendants()) do
-        if v:IsA("Decal") or v:IsA("Texture") then
-            v.Transparency = 1
-        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-            v.Lifetime = NumberRange.new(0)
+    if humanoidRootPart then
+        humanoidRootPart.Anchored = not humanoidRootPart.Anchored -- Toggle anchored state
+        if humanoidRootPart.Anchored then
+            
+    end
+end)
+
+Misc:AddButton("Anti Kick",function()
+	wait(0.5)local ba=Instance.new("ScreenGui")
+local ca=Instance.new("TextLabel")local da=Instance.new("Frame")
+local _b=Instance.new("TextLabel")local ab=Instance.new("TextLabel")ba.Parent=game.CoreGui
+ba.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;ca.Parent=ba;ca.Active=true
+ca.BackgroundColor3=Color3.new(0.176471,0.176471,0.176471)ca.Draggable=true
+ca.Position=UDim2.new(0.698610067,0,0.098096624,0)ca.Size=UDim2.new(0,370,0,52)
+ca.Font=Enum.Font.SourceSansSemibold;ca.Text="Anti Afk"ca.TextColor3=Color3.new(0,1,1)
+ca.TextSize=22;da.Parent=ca
+da.BackgroundColor3=Color3.new(0.196078,0.196078,0.196078)da.Position=UDim2.new(0,0,1.0192306,0)
+da.Size=UDim2.new(0,370,0,107)_b.Parent=da
+_b.BackgroundColor3=Color3.new(0.176471,0.176471,0.176471)_b.Position=UDim2.new(0,0,0.800455689,0)
+_b.Size=UDim2.new(0,370,0,21)_b.Font=Enum.Font.Arial;_b.Text="Made by luca#5432"
+_b.TextColor3=Color3.new(0,1,1)_b.TextSize=20;ab.Parent=da
+ab.BackgroundColor3=Color3.new(0.176471,0.176471,0.176471)ab.Position=UDim2.new(0,0,0.158377,0)
+ab.Size=UDim2.new(0,370,0,44)ab.Font=Enum.Font.ArialBold;ab.Text="Status: Active"
+ab.TextColor3=Color3.new(0,1,1)ab.TextSize=20;local bb=game:service'VirtualUser'
+game:service'Players'.LocalPlayer.Idled:connect(function()
+bb:CaptureController()bb:ClickButton2(Vector2.new())
+ab.Text="Roblox tried kicking you buy I didnt let them!"wait(2)ab.Text="Status : Active"end)
+end)
+
+Misc:AddButton("Infinite Jump", function()
+    local userInputService = game:GetService("UserInputService")
+    local player = game.Players.LocalPlayer
+    local isInfiniteJumpEnabled = false -- Toggle state for infinite jump
+
+    -- Function to handle infinite jump
+    local function onInput(input, isProcessed)
+        if isProcessed then return end -- Ignore input already handled by the game
+        if input.KeyCode == Enum.KeyCode.Space and isInfiniteJumpEnabled then
+            local character = player.Character
+            if character and character:FindFirstChild("Humanoid") then
+                character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
         end
     end
-end
 
--- Target Player
-function startTargeting()
-    isTargeting = true
-    spawn(function()
-        while isTargeting do
-            local player = game.Players.LocalPlayer
-            local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
-            local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
-            if targetPlayer and targetPlayer.Character and rightHand then
-                local targetHead = targetPlayer.Character:FindFirstChild("Head")
-                if targetHead then
-                    targetHead.CFrame = rightHand.CFrame
+    -- Toggle Infinite Jump
+    isInfiniteJumpEnabled = not isInfiniteJumpEnabled
+    if isInfiniteJumpEnabled then
+        userInputService.InputBegan:Connect(onInput)
+    else
+        userInputService.InputBegan:Disconnect(onInput)
+    end
+end)
+
+local features = window:AddTab("Kill") -- Name of tab
+features:Show() -- shows the tab
+
+local storedTool = nil -- Variable to store the removed tool
+
+-- Button to delete the Punch tool
+Kill:AddButton("Remove Punch", function()
+    local player = game.Players.LocalPlayer
+    local backpack = player:FindFirstChild("Backpack")
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    if backpack and character then
+        local punchTool = backpack:FindFirstChild("Punch") or character:FindFirstChild("Punch")
+        if punchTool then
+            storedTool = punchTool:Clone() -- Save a copy of the tool
+            punchTool:Destroy() -- Remove the tool from inventory
+        else
+            warn("Punch tool not found!")
+        end
+    else
+        warn("Backpack or character not found!")
+    end
+end)
+
+-- Button to restore the Punch tool
+Kill:AddButton("Restore Punch", function()
+    local player = game.Players.LocalPlayer
+    local backpack = player:FindFirstChild("Backpack")
+    
+    if backpack and storedTool then
+        storedTool.Parent = backpack -- Restore the tool to the backpack
+        storedTool = nil -- Clear the stored tool variable after restoring
+    else
+        warn("No stored Punch tool to restore!")
+    end
+end)
+
+local autoKillEnabled = false
+local punchToolName = "Punch"
+local isPunching = false
+local punchTool = nil
+local storedHeadData = {}
+local whitelistPlayers = {}  -- List to store whitelisted player names
+
+-- Function to start infinite punching and teleporting heads
+local function startAutoKill()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local backpack = player:FindFirstChild("Backpack")
+    local rightHand = character:FindFirstChild("RightHand")
+
+    if not backpack or not rightHand then
+        return
+    end
+
+    -- Find or equip the Punch tool
+    punchTool = backpack:FindFirstChild(punchToolName) or character:FindFirstChild(punchToolName)
+    if not punchTool then
+        punchTool = Instance.new("Tool") -- Create new Punch tool if not found
+        punchTool.Name = punchToolName
+        punchTool.Parent = backpack
+    end
+
+    -- Equip and activate Punch tool
+    character.Humanoid:EquipTool(punchTool)
+    isPunching = true
+
+    -- Teleport other players' heads to the right hand
+    while isPunching do
+        for _, target in pairs(game.Players:GetPlayers()) do
+            if target ~= player and target.Character and target.Character:FindFirstChild("Head") then
+                -- Exclude players in the whitelist
+                if not whitelistPlayers[target.Name] then
+                    local targetHead = target.Character.Head
+                    if targetHead then
+                        -- Store original head position and parent for restoration
+                        storedHeadData[target.Name] = targetHead.CFrame
+                        targetHead.CFrame = rightHand.CFrame
+                    end
                 end
             end
-            wait(0.1)
         end
-    end)
-end
-
-function stopTargeting()
-    isTargeting = false
-end
-
--- Infinite Punch
-function startInfinitePunch()
-    isPunching = true
-    spawn(function()
-        while isPunching do
-            local player = game.Players.LocalPlayer
-            local punchTool = player.Backpack:FindFirstChild("Punch") or player.Character:FindFirstChild("Punch")
-            if punchTool then
-                player.Character.Humanoid:EquipTool(punchTool)
-                punchTool:Activate()
-            else
-                warn("Punch tool not found!")
-                break
-            end
-            wait(0.1)
+        -- Use the Punch tool infinitely
+        if punchTool and punchTool:FindFirstChild("Activate") then
+            punchTool:Activate() -- Or use punchTool:Fire() depending on tool
         end
-    end)
+        wait(0.1) -- Delay for smoother execution
+    end
 end
 
-function stopInfinitePunch()
+-- Function to stop infinite punching and restore heads
+local function stopAutoKill()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Stop punching and unequip the tool
     isPunching = false
-end
+    if punchTool then
+        punchTool.Parent = character -- Unequip tool
+    end
 
--- Auto Kill
-local originalHeadData = {}
-function teleportHeadsToRightHand()
-    local localPlayer = game.Players.LocalPlayer
-    local rightHand = localPlayer.Character and localPlayer.Character:FindFirstChild("RightHand")
-    if not rightHand then return end
-    originalHeadData = {}
-    for _, target in pairs(game.Players:GetPlayers()) do
-        if target ~= localPlayer and target.Character then
-            local head = target.Character:FindFirstChild("Head")
+    -- Restore the original head positions
+    for playerName, originalHeadPosition in pairs(storedHeadData) do
+        local targetPlayer = game.Players:FindFirstChild(playerName)
+        if targetPlayer and targetPlayer.Character then
+            local head = targetPlayer.Character:FindFirstChild("Head")
             if head then
-                originalHeadData[target.Name] = {
-                    Parent = head.Parent,
-                    Position = head.CFrame
-                }
-                head.Parent = rightHand
-                head.CFrame = rightHand.CFrame
+                head.CFrame = originalHeadPosition -- Restore head position
             end
         end
     end
+    storedHeadData = {} -- Clear stored head data
 end
 
-function restoreHeads()
-    for playerName, data in pairs(originalHeadData) do
-        local player = game.Players:FindFirstChild(playerName)
-        if player and player.Character then
-            local head = player.Character:FindFirstChild("Head")
-            if head then
-                head.Parent = data.Parent
-                head.CFrame = data.Position
-            end
-        end
+-- Add the Auto Kill switch
+local switch = Kill:AddSwitch("Auto Kill", function(bool)
+    autoKillEnabled = bool
+    if autoKillEnabled then
+        startAutoKill()  -- Start infinite punch and teleport heads
+    else
+        stopAutoKill()   -- Stop infinite punch and restore heads
     end
-end
+end)
+switch:Set(false) -- Default to off
+
+-- Add the Whitelist TextBox
+Kill:AddTextBox("Whitelist", function(text)
+    -- Store the player name in the whitelist
+    whitelistPlayers[text] = true
+end)
+
+local features = window:AddTab("Teleport") -- Name of tab
+features:Show() -- shows the tab
+
+-- Add the Tiny Island Button
+Teleport:AddButton("Tiny Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(-38.4037132, 9.66723633, 1832.29114))
+end)
+
+-- Add the Frost Island Button
+Teleport:AddButton("Frost Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(-2533.64258, 13.7738762, -408.134796))
+end)
+
+-- Add the Mythical Island Button
+Teleport:AddButton("Mythical Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(2170.5437, 13.8738737, 1073.75525))
+end)
+
+
+
+-- Add the Mythical Island Button
+Teleport:AddButton("Mythical Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(2170.5437, 13.8738737, 1073.75525))
+end)
+
+-- Add the Legend Island Button
+Teleport:AddButton("Legend Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(4685.5625, 997.608765, -3910.30908))
+end)
+
+-- Add the Muscle King Button
+Teleport:AddButton("Muscle King", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Teleport the player to the specified position
+    character:SetPrimaryPartCFrame(CFrame.new(-8546.25879, 23.045435, -5636.78418))
+end)
+
+
+
+
+
+
 
 
 

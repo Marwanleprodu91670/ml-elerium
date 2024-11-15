@@ -2024,7 +2024,7 @@ end
 
 local window = library:AddWindow("Lite Hub Muscle Legends", {
     main_color = Color3.fromRGB(41, 74, 122),
-    min_size = Vector2.new(250, 346),
+    min_size = Vector2.new(35O, 346),
     can_resize = false,
 })
 
@@ -2346,13 +2346,6 @@ local autoKillSwitch = Player:AddSwitch("Auto Kill Players", function(bool)
 end)
 
 Player:AddLabel("Target")
-
-local switch = Player:AddSwitch("Kill Target Toggle", function(value)
-    killTargetEnabled = value
-    if value then
-        KillTarget()  -- Executes the KillTarget function when the toggle is enabled
-    end
-end)
 
 switch:Set(false)
 

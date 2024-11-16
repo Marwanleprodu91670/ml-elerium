@@ -2022,98 +2022,116 @@ return library
 
 --Script
 
+-- Script
+
 local window = library:AddWindow("Lite Hub Muscle Legends", {
-	main_color = Color3.fromRGB(41, 74, 122), -- Color
-	min_size = Vector2.new(450, 346), -- Size of the gui
-	can_resize = false, -- true or false
+    main_color = Color3.fromRGB(41, 74, 122),
+    min_size = Vector2.new(450, 346),
+    can_resize = false,
 })
 
-local features = window:AddTab("Auto Farm") -- Name of tab
-features:Show() -- shows the tab
+-- Variables globales pour les switches
+local autoPushupsEnabled = false
+local autoSitupsEnabled = false
+local autoWeightEnabled = false
+local autoHandstandsEnabled = false
+local autoKillEnabled = false
+local isInfiniteJumpEnabled = false
+local storedTool = nil
+local punchToolName = "Punch"
+local isPunching = false
+local punchTool = nil
+local storedHeadData = {}
+local whitelistPlayers = {}
 
-Auto Farm:AddSwitch("Auto Pushups", function(bool)
+-- Tabs
+local autoFarmTab = window:AddTab("Auto Farm")
+local miscTab = window:AddTab("Misc")
+local killTab = window:AddTab("Kill")
+local teleportTab = window:AddTab("Teleport")
+
+-- Auto Farm features
+autoFarmTab:AddSwitch("Auto Pushups", function(bool)
     autoPushupsEnabled = bool
     if bool then AutoPushups() end
 end)
 
-Auto Farm:AddSwitch("Auto Situps", function(bool)
+autoFarmTab:AddSwitch("Auto Situps", function(bool)
     autoSitupsEnabled = bool
     if bool then AutoSitups() end
 end)
 
-Auto Farm:AddSwitch("Auto Weight", function(bool)
+autoFarmTab:AddSwitch("Auto Weight", function(bool)
     autoWeightEnabled = bool
     if bool then AutoWeight() end
 end)
 
-Auto Farm:AddSwitch("Auto Handstands", function(bool)
+autoFarmTab:AddSwitch("Auto Handstands", function(bool)
     autoHandstandsEnabled = bool
     if bool then AutoHandstands() end
 end)
 
-local features = window:AddTab("Misc") -- Name of tab
-features:Show() -- shows the tab
+-- Misc features
+miscTab:AddButton("No Ping [Bad Quality]", function()
+    local decalsyeeted = true -- Leaving this on makes games look shitty but the fps goes up by at least 20.
+    local g = game
+    local w = g.Workspace
+    local l = g.Lighting
+    local t = w.Terrain
 
-Misc:AddButton("No Ping [Bad Quality]",function()
-	local decalsyeeted = true -- Leaving this on makes games look shitty but the fps goes up by at least 20.
-local g = game
-local w = g.Workspace
-local l = g.Lighting
-local t = w.Terrain
-t.WaterWaveSize = 0
-t.WaterWaveSpeed = 0
-t.WaterReflectance = 0
-t.WaterTransparency = 0
-l.GlobalShadows = false
-l.FogEnd = 9e9
-l.Brightness = 0
-settings().Rendering.QualityLevel = "Level01"
-for i, v in pairs(g:GetDescendants()) do
-    if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
-        v.Material = "Plastic"
-        v.Reflectance = 0
-    elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
-        v.Transparency = 1
-    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-        v.Lifetime = NumberRange.new(0)
-    elseif v:IsA("Explosion") then
-        v.BlastPressure = 1
-        v.BlastRadius = 1
-    elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
-        v.Enabled = false
-    elseif v:IsA("MeshPart") then
-        v.Material = "Plastic"
-        v.Reflectance = 0
-        v.TextureID = 10385902758728957
+    t.WaterWaveSize = 0
+    t.WaterWaveSpeed = 0
+    t.WaterReflectance = 0
+    t.WaterTransparency = 0
+    l.GlobalShadows = false
+    l.FogEnd = 9e9
+    l.Brightness = 0
+    settings().Rendering.QualityLevel = "Level01"
+    
+    for i, v in pairs(g:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+        elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+            v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Lifetime = NumberRange.new(0)
+        elseif v:IsA("Explosion") then
+            v.BlastPressure = 1
+            v.BlastRadius = 1
+        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+            v.Enabled = false
+        elseif v:IsA("MeshPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+            v.TextureID = 10385902758728957
+        end
     end
-end
-for i, e in pairs(l:GetChildren()) do
-    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
-        e.Enabled = false
+    
+    for i, e in pairs(l:GetChildren()) do
+        if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+            e.Enabled = false
+        end
     end
-end
 end)
 
-Misc:AddButton("Lock Positiob", function()
+miscTab:AddButton("Lock Position", function()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 
     if humanoidRootPart then
-        humanoidRootPart.Anchored = not humanoidRootPart.Anchored -- Toggle anchored state
-        if humanoidRootPart.Anchored then
-            
+        humanoidRootPart.Anchored = not humanoidRootPart.Anchored
     end
 end)
 
-Misc:AddButton("Infinite Jump", function()
+-- Infinite Jump feature
+miscTab:AddButton("Infinite Jump", function()
     local userInputService = game:GetService("UserInputService")
     local player = game.Players.LocalPlayer
-    local isInfiniteJumpEnabled = false -- Toggle state for infinite jump
 
-    -- Function to handle infinite jump
     local function onInput(input, isProcessed)
-        if isProcessed then return end -- Ignore input already handled by the game
+        if isProcessed then return end
         if input.KeyCode == Enum.KeyCode.Space and isInfiniteJumpEnabled then
             local character = player.Character
             if character and character:FindFirstChild("Humanoid") then
@@ -2122,7 +2140,6 @@ Misc:AddButton("Infinite Jump", function()
         end
     end
 
-    -- Toggle Infinite Jump
     isInfiniteJumpEnabled = not isInfiniteJumpEnabled
     if isInfiniteJumpEnabled then
         userInputService.InputBegan:Connect(onInput)
@@ -2131,22 +2148,17 @@ Misc:AddButton("Infinite Jump", function()
     end
 end)
 
-local features = window:AddTab("Kill") -- Name of tab
-features:Show() -- shows the tab
-
-local storedTool = nil -- Variable to store the removed tool
-
--- Button to delete the Punch tool
-Kill:AddButton("Remove Punch", function()
+-- Kill features
+killTab:AddButton("Remove Punch", function()
     local player = game.Players.LocalPlayer
     local backpack = player:FindFirstChild("Backpack")
     local character = player.Character or player.CharacterAdded:Wait()
-    
+
     if backpack and character then
         local punchTool = backpack:FindFirstChild("Punch") or character:FindFirstChild("Punch")
         if punchTool then
-            storedTool = punchTool:Clone() -- Save a copy of the tool
-            punchTool:Destroy() -- Remove the tool from inventory
+            storedTool = punchTool:Clone()
+            punchTool:Destroy()
         else
             warn("Punch tool not found!")
         end
@@ -2155,27 +2167,59 @@ Kill:AddButton("Remove Punch", function()
     end
 end)
 
--- Button to restore the Punch tool
-Kill:AddButton("Restore Punch", function()
+killTab:AddButton("Restore Punch", function()
     local player = game.Players.LocalPlayer
     local backpack = player:FindFirstChild("Backpack")
-    
+
     if backpack and storedTool then
-        storedTool.Parent = backpack -- Restore the tool to the backpack
-        storedTool = nil -- Clear the stored tool variable after restoring
+        storedTool.Parent = backpack
+        storedTool = nil
     else
         warn("No stored Punch tool to restore!")
     end
 end)
 
-local autoKillEnabled = false
-local punchToolName = "Punch"
-local isPunching = false
-local punchTool = nil
-local storedHeadData = {}
-local whitelistPlayers = {}  -- List to store whitelisted player names
+killTab:AddSwitch("Auto Kill", function(bool)
+    autoKillEnabled = bool
+    if autoKillEnabled then
+        startAutoKill()
+    else
+        stopAutoKill()
+    end
+end)
 
--- Function to start infinite punching and teleporting heads
+-- Teleport features
+teleportTab:AddButton("Tiny Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:SetPrimaryPartCFrame(CFrame.new(-38.4037132, 9.66723633, 1832.29114))
+end)
+
+teleportTab:AddButton("Frost Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:SetPrimaryPartCFrame(CFrame.new(-2533.64258, 13.7738762, -408.134796))
+end)
+
+teleportTab:AddButton("Mythical Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:SetPrimaryPartCFrame(CFrame.new(2170.5437, 13.8738737, 1073.75525))
+end)
+
+teleportTab:AddButton("Legend Island", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:SetPrimaryPartCFrame(CFrame.new(4685.5625, 997.608765, -3910.30908))
+end)
+
+teleportTab:AddButton("Muscle King", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:SetPrimaryPartCFrame(CFrame.new(-8546.25879, 23.045435, -5636.78418))
+end)
+
+-- Auto Kill functionality
 local function startAutoKill()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -2186,140 +2230,58 @@ local function startAutoKill()
         return
     end
 
-    -- Find or equip the Punch tool
     punchTool = backpack:FindFirstChild(punchToolName) or character:FindFirstChild(punchToolName)
     if not punchTool then
-        punchTool = Instance.new("Tool") -- Create new Punch tool if not found
+        punchTool = Instance.new("Tool")
         punchTool.Name = punchToolName
         punchTool.Parent = backpack
     end
 
-    -- Equip and activate Punch tool
     character.Humanoid:EquipTool(punchTool)
     isPunching = true
 
-    -- Teleport other players' heads to the right hand
     while isPunching do
         for _, target in pairs(game.Players:GetPlayers()) do
             if target ~= player and target.Character and target.Character:FindFirstChild("Head") then
-                -- Exclude players in the whitelist
                 if not whitelistPlayers[target.Name] then
                     local targetHead = target.Character.Head
                     if targetHead then
-                        -- Store original head position and parent for restoration
                         storedHeadData[target.Name] = targetHead.CFrame
                         targetHead.CFrame = rightHand.CFrame
                     end
                 end
             end
         end
-        -- Use the Punch tool infinitely
+
         if punchTool and punchTool:FindFirstChild("Activate") then
-            punchTool:Activate() -- Or use punchTool:Fire() depending on tool
+            punchTool:Activate()
         end
-        wait(0.1) -- Delay for smoother execution
+
+        wait(0.1)
     end
 end
 
--- Function to stop infinite punching and restore heads
 local function stopAutoKill()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
 
-    -- Stop punching and unequip the tool
     isPunching = false
     if punchTool then
-        punchTool.Parent = character -- Unequip tool
+        punchTool.Parent = character
     end
 
-    -- Restore the original head positions
     for playerName, originalHeadPosition in pairs(storedHeadData) do
         local targetPlayer = game.Players:FindFirstChild(playerName)
         if targetPlayer and targetPlayer.Character then
             local head = targetPlayer.Character:FindFirstChild("Head")
             if head then
-                head.CFrame = originalHeadPosition -- Restore head position
+                head.CFrame = originalHeadPosition
             end
         end
     end
-    storedHeadData = {} -- Clear stored head data
 end
 
--- Add the Auto Kill switch
-local switch = Kill:AddSwitch("Auto Kill", function(bool)
-    autoKillEnabled = bool
-    if autoKillEnabled then
-        startAutoKill()  -- Start infinite punch and teleport heads
-    else
-        stopAutoKill()   -- Stop infinite punch and restore heads
-    end
-end)
-switch:Set(false) -- Default to off
-
--- Add the Whitelist TextBox
-Kill:AddTextBox("Whitelist", function(text)
-    -- Store the player name in the whitelist
-    whitelistPlayers[text] = true
-end)
-
-local features = window:AddTab("Teleport") -- Name of tab
-features:Show() -- shows the tab
-
--- Add the Tiny Island Button
-Teleport:AddButton("Tiny Island", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(-38.4037132, 9.66723633, 1832.29114))
-end)
-
--- Add the Frost Island Button
-Teleport:AddButton("Frost Island", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(-2533.64258, 13.7738762, -408.134796))
-end)
-
--- Add the Mythical Island Button
-Teleport:AddButton("Mythical Island", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(2170.5437, 13.8738737, 1073.75525))
-end)
-
-
-
--- Add the Mythical Island Button
-Teleport:AddButton("Mythical Island", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(2170.5437, 13.8738737, 1073.75525))
-end)
-
--- Add the Legend Island Button
-Teleport:AddButton("Legend Island", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(4685.5625, 997.608765, -3910.30908))
-end)
-
--- Add the Muscle King Button
-Teleport:AddButton("Muscle King", function()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-
-    -- Teleport the player to the specified position
-    character:SetPrimaryPartCFrame(CFrame.new(-8546.25879, 23.045435, -5636.78418))
-end)
+-- End of Script
 
 
 
